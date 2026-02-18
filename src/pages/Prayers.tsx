@@ -26,15 +26,20 @@ const Prayers = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchPrayers = async () => {
+    if (!user) return;
+
     const { data: prayerData } = await supabase
       .from("prayer_requests")
-      .select("*, profiles!prayer_requests_user_id_fkey(display_name)")
-      .order("created_at", { ascending: false }).limit(50);
+      .select("*, profiles!prayer_requests_user_id_fkey(display_name, username)")
+      .eq("user_id", user.id)  // Filter to show only current user's prayers
+      .order("created_at", { ascending: false })
+      .limit(50);
+
     if (!prayerData) return;
     const ids = prayerData.map((p) => p.id);
     const [countsRes, userPrayedRes] = await Promise.all([
       supabase.from("prayer_counts").select("prayer_request_id").in("prayer_request_id", ids),
-      user ? supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids) : Promise.resolve({ data: [] }),
+      supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids),
     ]);
     const counts: Record<string, number> = {};
     countsRes.data?.forEach((c) => { counts[c.prayer_request_id] = (counts[c.prayer_request_id] || 0) + 1; });
@@ -79,7 +84,7 @@ const Prayers = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur-md px-4 py-4 flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold">{t("prayers.title")}</h1>
+        <h1 className="font-display text-xl font-bold">{t("prayers.myPrayers") || "My Prayers"}</h1>
         <Button size="sm" onClick={() => setShowForm(!showForm)} variant={showForm ? "secondary" : "default"}>
           <Plus className="h-4 w-4 mr-1" /> {t("prayers.request")}
         </Button>
@@ -102,7 +107,7 @@ const Prayers = () => {
         {requests.length === 0 && (
           <div className="py-20 text-center text-muted-foreground">
             <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p>{t("prayers.noPrayers")}</p>
+            <p>{t("prayers.noPersonalPrayers") || "You haven't posted any prayer requests yet"}</p>
             <p className="text-xs mt-1">{t("prayers.beFirst")}</p>
           </div>
         )}

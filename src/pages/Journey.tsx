@@ -5,13 +5,51 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Lock, Play, BookOpen, ChevronLeft } from "lucide-react";
+import { Check, Lock, Play, BookOpen, ChevronLeft, Heart, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { supabaseRetry } from "@/lib/supabaseRetry";
 
-interface DayContent { day_number: number; title: string; scripture: string; reflection: string; task: string; }
+import { getLocalMidnight, getContentVersionIndex } from "@/lib/dateUtils";
+
+interface DayContent {
+  day_number: number;
+  title: string;
+  prayer: string;
+  scripture: string;
+  reflection: string;
+  task: string;
+  duration_min: number;
+  seasonal_theme?: string;
+}
 interface ProgressEntry { day_number: number; completed: boolean; }
+
+const Confetti = () => {
+  const particles = Array.from({ length: 40 });
+  return (
+    <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+      {particles.map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+          animate={{
+            x: (Math.random() - 0.5) * 600,
+            y: (Math.random() - 0.5) * 600 - 200,
+            opacity: 0,
+            scale: Math.random() * 0.5 + 0.5,
+            rotate: Math.random() * 360,
+          }}
+          transition={{ duration: 2, ease: "easeOut" }}
+          className="absolute h-3 w-3 rounded-sm"
+          style={{
+            backgroundColor: ["#D4AF37", "#1A2B3C", "#8FBC8F", "#F5E6A3"][i % 4],
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 const Journey = () => {
   const { user } = useAuth();
@@ -22,89 +60,205 @@ const Journey = () => {
   const [selectedDay, setSelectedDay] = useState<DayContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [unlockedDays, setUnlockedDays] = useState(1);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    if (!user) return;
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    const [contentRes, progressRes] = await Promise.all([
+      supabase.from("daily_content")
+        .select("*")
+        .order("day_number"),
+      supabase.from("journey_progress")
+        .select("day_number, completed")
+        .eq("user_id", user.id)
+        .eq("completion_date", todayStr),
+    ]);
+
+    if (contentRes.error) setFetchError(contentRes.error.message);
+    if (progressRes.error) setFetchError(progressRes.error.message);
+
+    if (contentRes.data) setContent(contentRes.data as any);
+    if (progressRes.data) setProgress(progressRes.data);
+
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (!user) return;
-    const fetchData = async () => {
-      const [contentRes, progressRes] = await Promise.all([
-        supabase.from("daily_content").select("*").order("day_number"),
-        supabase.from("journey_progress").select("day_number, completed").eq("user_id", user.id),
-      ]);
-      if (contentRes.data) setContent(contentRes.data);
-      if (progressRes.data) setProgress(progressRes.data);
-      const createdAt = new Date(user.created_at);
-      const now = new Date();
-      const diffDays = Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-      setUnlockedDays(Math.min(diffDays, 60));
-      setLoading(false);
-    };
     fetchData();
+
+    // Real-time listener for journey progress (cross-device sync)
+    const channel = supabase
+      .channel(`journey-progress-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "journey_progress",
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => fetchData()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const completedDays = progress.filter((p) => p.completed).length;
   const progressPercent = (completedDays / 60) * 100;
   const isDayCompleted = (dayNum: number) => progress.some((p) => p.day_number === dayNum && p.completed);
-  const isDayUnlocked = (dayNum: number) => dayNum <= unlockedDays;
+
+  // Sequential unlocking logic: No more time/join-date limit, only sequential completion
+  const isDayUnlocked = (dayNum: number) => {
+    if (dayNum === 1) return true;
+    return isDayCompleted(dayNum - 1);
+  };
 
   const markComplete = async (dayNumber: number) => {
     if (!user) return;
-    const { error } = await supabase.from("journey_progress").upsert(
-      { user_id: user.id, day_number: dayNumber, completed: true, completed_at: new Date().toISOString() },
-      { onConflict: "user_id,day_number" }
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    // Resilient upsert with retry logic
+    const { error } = await supabaseRetry(() =>
+      supabase.from("journey_progress").upsert(
+        {
+          user_id: user.id,
+          day_number: dayNumber,
+          completed: true,
+          completed_at: new Date().toISOString(),
+          completion_date: todayStr
+        },
+        { onConflict: "user_id,day_number,completion_date" }
+      ) as any
     );
+
     if (error) {
       toast({ title: t("general.error"), description: error.message, variant: "destructive" });
     } else {
+      // Optimitistic update
       setProgress((prev) => {
         const existing = prev.find((p) => p.day_number === dayNumber);
         if (existing) return prev.map((p) => (p.day_number === dayNumber ? { ...p, completed: true } : p));
         return [...prev, { day_number: dayNumber, completed: true }];
       });
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
       toast({ title: t("journey.dayCompleted"), description: t("journey.keepWalking") });
     }
   };
 
+  const [completedSubSteps, setCompletedSubSteps] = useState<string[]>([]);
+
+  const toggleSubStep = (stepId: string) => {
+    setCompletedSubSteps(prev =>
+      prev.includes(stepId) ? prev.filter(s => s !== stepId) : [...prev, stepId]
+    );
+  };
+
+  const isAllSubStepsDone = completedSubSteps.length >= 4;
+
   if (selectedDay) {
+    const steps = [
+      { id: "opening-prayer", label: t("journey.openingPrayer"), content: "Pai, entro em Tua presença com o coração aberto. Guia meus passos hoje conforme a Tua vontade. Amém.", icon: Heart },
+      { id: "reading", label: t("journey.reading"), content: selectedDay.reflection, scripture: selectedDay.scripture, icon: BookOpen },
+      { id: "devotional-prayer", label: "Oração Devocional", content: selectedDay.prayer, icon: Star },
+      { id: "task", label: t("journey.practicalAction"), content: selectedDay.task, icon: Play },
+    ];
+
+    const isDayAlreadyCompleted = isDayCompleted(selectedDay.day_number);
+
     return (
       <div className="min-h-screen bg-background">
-        <div className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur-md px-4 py-3">
-          <button onClick={() => setSelectedDay(null)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+        <div className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur-md px-4 py-3 flex items-center justify-between">
+          <button onClick={() => { setSelectedDay(null); setCompletedSubSteps([]); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="h-4 w-4" /> {t("journey.back")}
           </button>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
+            {t("journey.dayOf", selectedDay.day_number)}
+          </span>
         </div>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 space-y-6">
-          <div className="text-center">
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-              {t("journey.dayOf", selectedDay.day_number)}
-            </span>
-            <h1 className="mt-3 font-display text-2xl font-bold">{selectedDay.title}</h1>
+
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 pb-24 space-y-6">
+          <div className="text-center mb-8">
+            <h1 className="font-display text-3xl font-bold text-primary leading-tight">
+              {selectedDay.title}
+            </h1>
           </div>
-          <Card className="border-0 bg-soft-yellow/30 shadow-sm">
-            <CardContent className="p-5">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-accent">
-                <BookOpen className="h-4 w-4" /> {t("journey.scripture")}
-              </h3>
-              <p className="font-display text-base italic leading-relaxed">{selectedDay.scripture}</p>
-            </CardContent>
-          </Card>
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">{t("journey.reflection")}</h3>
-            <p className="text-sm leading-relaxed text-muted-foreground">{selectedDay.reflection}</p>
+
+          <div className="space-y-4">
+            {steps.map((step, index) => {
+              const isDone = completedSubSteps.includes(step.id) || isDayAlreadyCompleted;
+              const Icon = step.icon;
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className={cn(
+                    "border-2 transition-all duration-300 overflow-hidden",
+                    isDone ? "border-sage/30 bg-sage/5" : "border-primary/5 bg-card"
+                  )}>
+                    <CardContent className="p-0">
+                      <div
+                        className="p-4 flex items-start gap-4 cursor-pointer"
+                        onClick={() => !isDayAlreadyCompleted && toggleSubStep(step.id)}
+                      >
+                        <div className={cn(
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors",
+                          isDone ? "bg-sage text-white" : "bg-primary/10 text-primary"
+                        )}>
+                          {isDone ? <Check className="h-5 w-5" /> : <step.icon className="h-4 w-4" />}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className={cn("font-bold text-sm", isDone ? "text-sage" : "text-foreground")}>
+                            {step.label}
+                          </h3>
+                          <div className="mt-2 text-sm leading-relaxed text-muted-foreground space-y-3">
+                            <p>{step.content}</p>
+                            {step.scripture && (
+                              <p className="font-medium italic text-xs border-l-2 border-primary/20 pl-3 py-1">
+                                — {step.scripture}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
           </div>
-          <Card className="border-0 bg-primary/5 shadow-sm">
-            <CardContent className="p-5">
-              <h3 className="mb-2 text-sm font-semibold text-primary">{t("journey.todayTask")}</h3>
-              <p className="text-sm leading-relaxed">{selectedDay.task}</p>
-            </CardContent>
-          </Card>
-          {!isDayCompleted(selectedDay.day_number) && (
-            <Button onClick={() => markComplete(selectedDay.day_number)} className="w-full gap-2" size="lg">
-              <Check className="h-4 w-4" /> {t("journey.markComplete")}
-            </Button>
-          )}
-          {isDayCompleted(selectedDay.day_number) && (
-            <div className="rounded-xl bg-green-50 p-4 text-center text-sm font-medium text-green-700">{t("journey.completed")}</div>
-          )}
+
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-10">
+            <div className="mx-auto max-w-lg">
+              {!isDayAlreadyCompleted ? (
+                <Button
+                  disabled={!isAllSubStepsDone}
+                  onClick={() => markComplete(selectedDay.day_number)}
+                  className={cn(
+                    "w-full h-14 text-lg font-bold gap-3 shadow-lg btn-rounded transition-all active:scale-95",
+                    isAllSubStepsDone ? "gradient-spiritual" : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Check className="h-5 w-5" />
+                  {isAllSubStepsDone ? t("journey.markComplete") : "Realize todos os passos"}
+                </Button>
+              ) : (
+                <div className="h-14 flex items-center justify-center gap-2 text-sage font-bold">
+                  <Check className="h-5 w-5" /> {t("journey.completed")}
+                </div>
+              )}
+            </div>
+          </div>
         </motion.div>
       </div>
     );
@@ -112,19 +266,31 @@ const Journey = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {showConfetti && <Confetti />}
       <div className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur-md px-4 py-4">
-        <h1 className="font-display text-xl font-bold">{t("journey.title")}</h1>
-        <div className="mt-3 space-y-1">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{t("journey.dayOf", completedDays)}</span>
+        <div className="flex items-center justify-between">
+          <h1 className="font-display text-2xl font-bold text-primary">{t("journey.title")}</h1>
+          <span className="text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+            {completedDays} / 60 {t("journey.steps") || "Steps"}
+          </span>
+        </div>
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase text-muted-foreground">
+            <span>{t("journey.progress") || "Your Progression"}</span>
             <span>{Math.round(progressPercent)}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
+          <Progress value={progressPercent} className="h-2 rounded-full" />
         </div>
       </div>
       <div className="mx-auto max-w-lg space-y-2 p-4">
         {loading ? (
           <div className="py-20 text-center text-muted-foreground">{t("journey.loading")}</div>
+        ) : fetchError ? (
+          <div className="py-20 text-center text-destructive">
+            <p className="font-bold">Erro de Conexão:</p>
+            <p className="text-sm">{fetchError}</p>
+            <Button onClick={fetchData} variant="outline" size="sm" className="mt-4">Tentar Novamente</Button>
+          </div>
         ) : content.length === 0 ? (
           <div className="py-20 text-center text-muted-foreground">
             <BookOpen className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />

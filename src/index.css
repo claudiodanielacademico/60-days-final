@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,98 +6,137 @@
 
 @layer base {
   :root {
-    /* Serene Blue #5B8DB8 = hsl(209, 38%, 54%) */
-    /* Gold #C9A84C = hsl(44, 52%, 54%) */
-    /* Soft Yellow #F5E6A3 = hsl(47, 83%, 80%) */
-    /* Warm White-Brown #E8DCC8 = hsl(37, 42%, 85%) */
+    /* New Visual Identity Colors */
+    /* Primary: Midnight Blue #1A2B3C = hsl(210, 38%, 17%) */
+    /* Accent: Gentle Gold #D4AF37 = hsl(43, 64%, 53%) */
+    /* Background: Off-White/Cream #F9F9F7 = hsl(60, 14%, 97%) */
+    /* Soft Sage Green #8FBC8F = hsl(120, 25%, 65%) */
 
-    --background: 37 42% 95%;
-    --foreground: 220 30% 18%;
+    --background: 60 14% 97%;
+    --foreground: 210 38% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 30% 18%;
+    --card-foreground: 210 38% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 30% 18%;
+    --popover-foreground: 210 38% 17%;
 
-    --primary: 209 38% 54%;
+    --primary: 210 38% 17%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 37 42% 85%;
-    --secondary-foreground: 220 30% 18%;
+    --secondary: 120 25% 65%;
+    --secondary-foreground: 210 38% 17%;
 
-    --muted: 37 30% 90%;
-    --muted-foreground: 220 15% 50%;
+    --muted: 60 10% 90%;
+    --muted-foreground: 210 15% 45%;
 
-    --accent: 44 52% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 43 64% 53%;
+    --accent-foreground: 210 38% 17%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 37 30% 85%;
-    --input: 37 30% 85%;
-    --ring: 209 38% 54%;
+    --border: 60 10% 88%;
+    --input: 60 10% 88%;
+    --ring: 43 64% 53%;
 
+    /* Rounded corners: 8-12px */
     --radius: 0.75rem;
 
-    --gold: 44 52% 54%;
-    --gold-foreground: 0 0% 100%;
-    --soft-yellow: 47 83% 80%;
-    --warm-brown: 37 42% 85%;
+    --gold: 43 64% 53%;
+    --gold-foreground: 210 38% 17%;
+    --sage: 120 25% 65%;
+    --sage-foreground: 210 38% 17%;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 209 38% 54%;
+    --sidebar-foreground: 210 38% 17%;
+    --sidebar-primary: 210 38% 17%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 37 42% 85%;
-    --sidebar-accent-foreground: 220 30% 18%;
-    --sidebar-border: 37 30% 85%;
-    --sidebar-ring: 209 38% 54%;
+    --sidebar-accent: 60 10% 90%;
+    --sidebar-accent-foreground: 210 38% 17%;
+    --sidebar-border: 60 10% 88%;
+    --sidebar-ring: 43 64% 53%;
   }
 
   .dark {
-    --background: 220 25% 10%;
-    --foreground: 37 30% 90%;
+    --background: 210 38% 10%;
+    --foreground: 60 14% 95%;
 
-    --card: 220 25% 14%;
-    --card-foreground: 37 30% 90%;
+    --card: 210 38% 15%;
+    --card-foreground: 60 14% 95%;
 
-    --popover: 220 25% 14%;
-    --popover-foreground: 37 30% 90%;
+    --popover: 210 38% 15%;
+    --popover-foreground: 60 14% 95%;
 
-    --primary: 209 45% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 43 64% 60%;
+    --primary-foreground: 210 38% 10%;
 
-    --secondary: 220 20% 20%;
-    --secondary-foreground: 37 30% 90%;
+    --secondary: 120 20% 40%;
+    --secondary-foreground: 60 14% 95%;
 
-    --muted: 220 20% 20%;
-    --muted-foreground: 220 15% 60%;
+    --muted: 210 25% 20%;
+    --muted-foreground: 210 15% 60%;
 
-    --accent: 44 52% 54%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 43 64% 60%;
+    --accent-foreground: 210 38% 10%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 209 45% 60%;
+    --border: 210 25% 25%;
+    --input: 210 25% 25%;
+    --ring: 43 64% 60%;
 
-    --gold: 44 52% 58%;
-    --gold-foreground: 0 0% 100%;
-    --soft-yellow: 47 60% 40%;
-    --warm-brown: 37 30% 25%;
+    --gold: 43 64% 60%;
+    --gold-foreground: 210 38% 10%;
+    --sage: 120 20% 45%;
+    --sage-foreground: 60 14% 95%;
 
-    --sidebar-background: 220 25% 10%;
-    --sidebar-foreground: 37 30% 90%;
-    --sidebar-primary: 209 45% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 20% 20%;
-    --sidebar-accent-foreground: 37 30% 90%;
-    --sidebar-border: 220 20% 20%;
-    --sidebar-ring: 209 45% 60%;
+    --sidebar-background: 210 38% 10%;
+    --sidebar-foreground: 60 14% 95%;
+    --sidebar-primary: 43 64% 60%;
+    --sidebar-primary-foreground: 210 38% 10%;
+    --sidebar-accent: 210 25% 20%;
+    --sidebar-accent-foreground: 60 14% 95%;
+    --sidebar-border: 210 25% 25%;
+    --sidebar-ring: 43 64% 60%;
+  }
+
+  /* Micro-interactions & Special Utilities */
+  .gradient-spiritual {
+    @apply bg-gradient-to-br from-primary via-primary/90 to-accent/80 text-accent;
+  }
+
+  .card-breathing {
+    animation: breathing 8s ease-in-out infinite;
+  }
+
+  @keyframes breathing {
+
+    0%,
+    100% {
+      transform: scale(1);
+      box-shadow: 0 4px 20px rgba(212, 175, 55, 0.1);
+    }
+
+    50% {
+      transform: scale(1.01);
+      box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+    }
+  }
+
+  .btn-rounded {
+    @apply rounded-2xl;
+  }
+
+  .card-rounded {
+    @apply rounded-3xl;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
@@ -109,9 +148,64 @@
   body {
     @apply bg-background text-foreground font-body antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
+    /* Smooth transitions for language switching */
+    transition: opacity 0.3s ease-in-out;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  body.language-switching {
+    opacity: 0.95;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-display;
+    letter-spacing: -0.02em;
+  }
+
+  /* Increased white space for breathing effect */
+  .card-breathing {
+    @apply p-6 space-y-6;
+  }
+
+  /* Smooth fade-in for content */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+}
+
+@layer components {
+
+  /* Rounded corners for all interactive elements */
+  .btn-rounded {
+    @apply rounded-xl;
+  }
+
+  .card-rounded {
+    @apply rounded-xl;
+  }
+
+  /* Spiritual gradient backgrounds */
+  .gradient-spiritual {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+
+  .gradient-calm {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--accent)) 100%);
   }
 }

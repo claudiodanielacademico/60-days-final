@@ -7,10 +7,15 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import AppShell from "@/components/AppShell";
 import Auth from "@/pages/Auth";
+import Index from "@/pages/Index";
 import Journey from "@/pages/Journey";
 import Community from "@/pages/Community";
 import Prayers from "@/pages/Prayers";
 import Profile from "@/pages/Profile";
+import Search from "@/pages/Search";
+import Messages from "@/pages/Messages";
+import PublicProfile from "@/pages/PublicProfile";
+import FollowList from "@/pages/FollowList";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,12 +44,16 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/" element={<Navigate to="/journey" replace />} />
               <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+                <Route index element={<Index />} />
                 <Route path="journey" element={<Journey />} />
                 <Route path="community" element={<Community />} />
                 <Route path="prayers" element={<Prayers />} />
+                <Route path="search" element={<Search />} />
+                <Route path="messages" element={<Messages />} />
                 <Route path="profile" element={<Profile />} />
+                <Route path="user/:username" element={<PublicProfile />} />
+                <Route path="user/:username/:type" element={<FollowList />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

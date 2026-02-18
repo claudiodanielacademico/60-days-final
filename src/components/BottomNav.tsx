@@ -1,4 +1,4 @@
-import { BookOpen, Users, Heart, User } from "lucide-react";
+import { BookOpen, Users, Heart, User, Search, MessageSquare } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -6,7 +6,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 const tabs = [
   { path: "/journey", labelKey: "nav.journey" as const, icon: BookOpen },
   { path: "/community", labelKey: "nav.community" as const, icon: Users },
+  { path: "/messages", labelKey: "nav.messages" as const, icon: MessageSquare },
   { path: "/prayers", labelKey: "nav.prayers" as const, icon: Heart },
+  { path: "/search", labelKey: "nav.search" as const, icon: Search },
   { path: "/profile", labelKey: "nav.profile" as const, icon: User },
 ];
 
