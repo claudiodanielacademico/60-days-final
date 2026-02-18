@@ -107,7 +107,7 @@ const Prayers = () => {
       setShowForm(false);
       toast({
         title: "Oração salva",
-        description: "Sua oração foi registrada no seu diário pessoal."
+        description: "Sua oração foi adicionada à sua lista."
       });
       fetchPrayers();
     }
@@ -133,7 +133,7 @@ const Prayers = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-10 border-b border-border bg-card/90 backdrop-blur-md px-4 py-4 flex items-center justify-between">
-        <h1 className="font-display text-xl font-bold">{t("prayers.myPrayers") || "Meu Diário"}</h1>
+        <h1 className="font-display text-xl font-bold">{t("prayers.myPrayers") || "Minhas Orações"}</h1>
         <Button size="sm" onClick={() => setShowForm(!showForm)} variant={showForm ? "secondary" : "default"}>
           <Plus className="h-4 w-4 mr-1" /> {t("prayers.request")}
         </Button>
