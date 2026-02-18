@@ -19,14 +19,33 @@
   <meta name="twitter:site" content="@Lovable" />
   <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
   <script>
+    // Global error handler to catch initialization errors
     window.onerror = function (msg, url, line, col, error) {
+      console.error("Critical loading error:", msg, "at", url, ":", line);
       var root = document.getElementById("root");
       if (root) {
-        root.innerHTML = '<div style="color: white; background: #e11d48; padding: 20px; font-family: sans-serif; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;">' +
-          '<strong>[ERRO DE CARREGAMENTO]</strong><br>' +
-          'Mensagem: ' + msg + '<br>' +
-          'Arquivo: ' + url + ' (Linha: ' + line + ')' +
-          '</div>';
+        root.innerHTML = `
+          <div style="padding: 40px; font-family: system-ui, -apple-system, sans-serif; text-align: center; color: #1f2937; background: #f9fafb; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="background: white; padding: 32px; border-radius: 16px; shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1); border: 1px solid #e5e7eb; max-width: 500px; width: 100%;">
+              <div style="color: #ef4444; margin-bottom: 16px;">
+                <svg style="width: 48px; height: 48px; margin: 0 auto;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Erro ao Carregar</h1>
+              <p style="color: #6b7280; font-size: 14px; margin-bottom: 24px;">
+                Não foi possível iniciar o aplicativo. Isso geralmente acontece por falta de conexão ou erro no servidor.
+              </p>
+              <div style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 12px; text-align: left; overflow-x: auto; margin-bottom: 24px; border: 1px solid #d1d5db;">
+                <strong>Erro:</strong> ${msg}<br>
+                <strong>Local:</strong> ${url.split('/').pop()} (L:${line})
+              </div>
+              <button onclick="window.location.reload()" style="background: #1f2937; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; width: 100%;">
+                Tentar Novamente
+              </button>
+            </div>
+          </div>
+        `;
       }
       return false;
     };
