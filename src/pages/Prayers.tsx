@@ -30,9 +30,12 @@ const Prayers = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchPrayers = async () => {
+    if (!user) return;
+
     const { data: prayerData, error } = await supabase
       .from("prayer_requests")
       .select("*, profiles!prayer_requests_user_id_fkey(display_name, avatar_url, username)")
+      .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50) as any;
 
@@ -52,9 +55,7 @@ const Prayers = () => {
 
     const [countsRes, userPrayedRes] = await Promise.all([
       supabase.from("prayer_counts").select("prayer_request_id").in("prayer_request_id", ids),
-      user
-        ? supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids)
-        : Promise.resolve({ data: [] }),
+      supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids),
     ]);
 
     const counts: Record<string, number> = {};
@@ -72,11 +73,15 @@ const Prayers = () => {
   useEffect(() => {
     fetchPrayers();
 
-    // Subscribe to new prayers and counts globally
+    // Subscribe only to user's own changes for privacy and efficiency
     const prayerChannel = supabase
-      .channel("global-prayers")
-      .on("postgres_changes", { event: "*", schema: "public", table: "prayer_requests" }, () => fetchPrayers())
-      .on("postgres_changes", { event: "*", schema: "public", table: "prayer_counts" }, () => fetchPrayers())
+      .channel("user-prayers")
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "prayer_requests",
+        filter: `user_id=eq.${user?.id}`
+      }, () => fetchPrayers())
       .subscribe();
 
     return () => {
