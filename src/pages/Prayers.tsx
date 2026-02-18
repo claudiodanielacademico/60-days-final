@@ -144,8 +144,8 @@ const Prayers = () => {
         {requests.length === 0 && (
           <div className="py-20 text-center text-muted-foreground">
             <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p>{t("prayers.noPersonalPrayers") || "Ainda não há pedidos de oração"}</p>
-            <p className="text-xs mt-1">{t("prayers.beFirst")}</p>
+            <p>{t("prayers.noPersonalPrayers") || "Seu diário de oração está vazio"}</p>
+            <p className="text-xs mt-1">Suas orações são privadas e aparecem apenas aqui.</p>
           </div>
         )}
         {requests.map((req, i) => (
