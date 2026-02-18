@@ -34,7 +34,7 @@ const Prayers = () => {
       .from("prayer_requests")
       .select("*, profiles!prayer_requests_user_id_fkey(display_name, avatar_url, username)")
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(50) as any;
 
     if (error) {
       console.error("Error fetching prayers:", error);

@@ -134,27 +134,28 @@
   }
 }
 
-.btn-pulse {
-  animation: pulse-gold 2s infinite;
-}
-
-@keyframes pulse-gold {
-  0% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+@layer utilities {
+  .btn-pulse {
+    animation: pulse-gold 2s infinite;
   }
 
-  70% {
-    box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+  @keyframes pulse-gold {
+    0% {
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+    }
   }
 
-  100% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  .text-balance {
+    text-wrap: balance;
   }
-}
-
-.text-balance {
-  text-wrap: balance;
-}
 }
 
 @layer base {
