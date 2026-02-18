@@ -11,9 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface PrayerRequest {
-  id: string; user_id: string; content: string; created_at: string;
-  profiles?: { display_name: string } | null;
-  prayer_count: number; user_prayed: boolean;
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  profiles?: { display_name: string; avatar_url: string | null; username: string } | null;
+  prayer_count: number;
+  user_prayed: boolean;
 }
 
 const Prayers = () => {
