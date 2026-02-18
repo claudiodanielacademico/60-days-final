@@ -1,26 +1,47 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>60 Days Closer</title>
-    <meta name="description" content="Sua jornada diária de 60 dias mais próximo de Deus." />
-    <meta name="author" content="Claudio Daniel" />
 
-    <!-- TODO: Update og:title to match your application name -->
-    <meta property="og:title" content="60 Days Closer" />
-    <meta property="og:description" content="60 passos diários para fortalecer sua fé." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- TODO: Set the document title to the name of your application -->
+  <title>60 Days Closer</title>
+  <meta name="description" content="Sua jornada diária de 60 dias mais próximo de Deus." />
+  <meta name="author" content="Claudio Daniel" />
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+  <!-- TODO: Update og:title to match your application name -->
+  <meta property="og:title" content="60 Days Closer" />
+  <meta property="og:description" content="60 passos diários para fortalecer sua fé." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@Lovable" />
+  <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+  <script>
+    window.onerror = function (msg, url, line, col, error) {
+      var root = document.getElementById("root");
+      if (root) {
+        root.innerHTML = '<div style="color: white; background: #e11d48; padding: 20px; font-family: sans-serif; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;">' +
+          '<strong>[ERRO DE CARREGAMENTO]</strong><br>' +
+          'Mensagem: ' + msg + '<br>' +
+          'Arquivo: ' + url + ' (Linha: ' + line + ')' +
+          '</div>';
+      }
+      return false;
+    };
+    console.log("App bootstrap script initialized");
+  </script>
+</head>
+
+<body>
+  <div id="root">
+    <div
+      style="display: flex; height: 100vh; align-items: center; justify-content: center; font-family: sans-serif; color: #666;">
+      Carregando Jardim de Oração...
+    </div>
+  </div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
