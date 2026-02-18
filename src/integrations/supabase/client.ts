@@ -5,8 +5,12 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-  console.error("CRITICAL: Supabase credentials are missing! Check your Netlify Environment Variables.");
+// Detailed logging for Netlify debugging
+if (typeof window !== "undefined") {
+  console.log("Supabase Client Init - URL:", SUPABASE_URL ? `${SUPABASE_URL.substring(0, 15)}...` : "MISSING");
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    console.error("CRITICAL: Supabase credentials are missing! Check your Netlify Environment Variables.");
+  }
 }
 
 // Import the supabase client like this:
