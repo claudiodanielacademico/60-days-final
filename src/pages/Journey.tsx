@@ -184,11 +184,12 @@ const Journey = () => {
           </span>
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 pb-24 space-y-6">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 pb-10 space-y-8">
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-bold text-primary leading-tight">
               {selectedDay.title}
             </h1>
+            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">v3 - Sincronizado</p>
           </div>
 
           <div className="space-y-4">
@@ -204,7 +205,7 @@ const Journey = () => {
                 >
                   <Card className={cn(
                     "border-2 transition-all duration-300 overflow-hidden",
-                    isDone ? "border-sage/30 bg-sage/5" : "border-primary/5 bg-card"
+                    isDone ? "border-sage/40 bg-sage/5 shadow-inner" : "border-primary/5 bg-card"
                   )}>
                     <CardContent className="p-0">
                       <div
@@ -212,19 +213,19 @@ const Journey = () => {
                         onClick={() => !isDayAlreadyCompleted && toggleSubStep(step.id)}
                       >
                         <div className={cn(
-                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors",
-                          isDone ? "bg-sage text-white" : "bg-primary/10 text-primary"
+                          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-500",
+                          isDone ? "bg-sage text-white scale-110 rotate-[360deg]" : "bg-primary/10 text-primary"
                         )}>
                           {isDone ? <Check className="h-5 w-5" /> : <step.icon className="h-4 w-4" />}
                         </div>
                         <div className="flex-1">
-                          <h3 className={cn("font-bold text-sm", isDone ? "text-sage" : "text-foreground")}>
+                          <h3 className={cn("font-bold text-sm transition-colors", isDone ? "text-sage" : "text-foreground")}>
                             {step.label}
                           </h3>
                           <div className="mt-2 text-sm leading-relaxed text-muted-foreground space-y-3">
                             <p>{step.content}</p>
                             {step.scripture && (
-                              <p className="font-medium italic text-xs border-l-2 border-primary/20 pl-3 py-1">
+                              <p className="font-medium italic text-xs border-l-2 border-primary/20 pl-3 py-1 bg-muted/30">
                                 — {step.scripture}
                               </p>
                             )}
@@ -238,28 +239,32 @@ const Journey = () => {
             })}
           </div>
 
-          <div className="fixed bottom-32 left-0 right-0 p-4 z-[60] pointer-events-none">
-            <div className="mx-auto max-w-lg bg-background/95 backdrop-blur-md border-2 border-accent/40 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.4)] pointer-events-auto">
-              {!isDayAlreadyCompleted ? (
-                <Button
-                  disabled={!isAllSubStepsDone}
-                  onClick={() => markComplete(selectedDay.day_number)}
-                  className={cn(
-                    "w-full h-16 text-lg font-bold gap-3 shadow-xl btn-rounded transition-all active:scale-95",
-                    isAllSubStepsDone
-                      ? "bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-[#1A2B3C] border-2 border-[#D4AF37]/20 btn-pulse scale-[1.02]"
-                      : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Check className={cn("h-6 w-6", isAllSubStepsDone && "animate-bounce")} />
-                  {isAllSubStepsDone ? t("journey.markComplete") : "Realize todos os passos"}
-                </Button>
-              ) : (
-                <div className="h-14 flex items-center justify-center gap-2 text-sage font-bold">
-                  <Check className="h-5 w-5" /> {t("journey.completed")}
+          <div className="mt-12 mb-8 px-2">
+            {!isDayAlreadyCompleted ? (
+              <Button
+                disabled={!isAllSubStepsDone}
+                onClick={() => markComplete(selectedDay.day_number)}
+                className={cn(
+                  "w-full h-20 text-xl font-bold gap-4 shadow-2xl btn-rounded transition-all active:scale-95 border-b-4",
+                  isAllSubStepsDone
+                    ? "bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-primary border-[#B8860B] btn-pulse scale-[1.05]"
+                    : "bg-muted text-muted-foreground border-muted-foreground/20"
+                )}
+              >
+                <Check className={cn("h-8 w-8", isAllSubStepsDone && "animate-bounce")} />
+                {isAllSubStepsDone ? t("journey.markComplete") : "Complete todos os passos acima"}
+              </Button>
+            ) : (
+              <div className="py-8 flex flex-col items-center justify-center gap-4 bg-sage/10 rounded-3xl border-2 border-dashed border-sage/50">
+                <div className="bg-sage text-white p-3 rounded-full shadow-lg">
+                  <Check className="h-10 w-10 text-white" />
                 </div>
-              )}
-            </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-sage">{t("journey.completed")}</p>
+                  <p className="text-sm text-sage/70 font-medium">Você concluiu as tarefas de hoje!</p>
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
