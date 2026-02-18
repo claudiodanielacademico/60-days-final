@@ -184,12 +184,11 @@ const Journey = () => {
           </span>
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 pb-10 space-y-8">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mx-auto max-w-lg p-4 pb-48 space-y-8">
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-bold text-primary leading-tight">
               {selectedDay.title}
             </h1>
-            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">v3 - Sincronizado</p>
           </div>
 
           <div className="space-y-4">
@@ -239,30 +238,28 @@ const Journey = () => {
             })}
           </div>
 
-          <div className="fixed bottom-24 right-4 z-[100] flex flex-col items-end gap-2">
-            {!isDayAlreadyCompleted ? (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <div className="fixed bottom-28 left-0 right-0 p-4 z-[60] pointer-events-none">
+            <div className="mx-auto max-w-lg bg-background/95 backdrop-blur-md border-2 border-accent/30 rounded-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
+              {!isDayAlreadyCompleted ? (
                 <Button
                   disabled={!isAllSubStepsDone}
                   onClick={() => markComplete(selectedDay.day_number)}
                   className={cn(
-                    "h-20 w-20 rounded-full flex-col shadow-[0_10px_40px_rgba(212,175,55,0.4)] border-2 border-[#D4AF37]/50",
+                    "w-full h-16 text-lg font-bold gap-3 shadow-xl btn-rounded transition-all active:scale-95",
                     isAllSubStepsDone
-                      ? "bg-gradient-to-br from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-primary btn-pulse animate-bounce"
-                      : "bg-muted text-muted-foreground opacity-90"
+                      ? "bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-primary btn-pulse scale-[1.02]"
+                      : "bg-muted text-muted-foreground"
                   )}
                 >
-                  <Check className={cn("h-8 w-8", isAllSubStepsDone && "animate-pulse")} />
-                  <span className="text-[8px] font-black uppercase leading-none mt-1">
-                    {isAllSubStepsDone ? "CONCLUIR" : "FAÇA OS PASSOS"}
-                  </span>
+                  <Check className={cn("h-6 w-6", isAllSubStepsDone && "animate-bounce")} />
+                  {isAllSubStepsDone ? t("journey.markComplete") : "Realize todos os passos"}
                 </Button>
-              </motion.div>
-            ) : (
-              <div className="h-16 w-16 rounded-full bg-sage text-white flex items-center justify-center shadow-xl border-4 border-white/50 animate-in fade-in zoom-in">
-                <Check className="h-8 w-8" />
-              </div>
-            )}
+              ) : (
+                <div className="h-14 flex items-center justify-center gap-2 text-sage font-bold">
+                  <Check className="h-5 w-5" /> {t("journey.completed")}
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
       </div>
