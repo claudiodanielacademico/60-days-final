@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import AppShell from "@/components/AppShell";
 import Auth from "@/pages/Auth";
 import Journey from "@/pages/Journey";
@@ -34,19 +35,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            <Route path="/auth" element={<AuthRoute />} />
-            <Route path="/" element={<Navigate to="/journey" replace />} />
-            <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-              <Route path="journey" element={<Journey />} />
-              <Route path="community" element={<Community />} />
-              <Route path="prayers" element={<Prayers />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Routes>
+              <Route path="/auth" element={<AuthRoute />} />
+              <Route path="/" element={<Navigate to="/journey" replace />} />
+              <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
+                <Route path="journey" element={<Journey />} />
+                <Route path="community" element={<Community />} />
+                <Route path="prayers" element={<Prayers />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
