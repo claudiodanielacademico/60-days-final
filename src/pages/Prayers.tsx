@@ -159,6 +159,8 @@ const Prayers = () => {
             <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
             <p>{t("prayers.noPersonalPrayers") || "Você ainda não tem orações salvas"}</p>
             <p className="text-xs mt-1">Suas orações são privadas e aparecem apenas aqui.</p>
+            {/* INVISIBLE DEBUG: Uncomment if still failing */}
+            {/* <pre className="text-red-500 text-[10px] mt-4 text-left p-4 bg-muted rounded">{JSON.stringify({ user: user.id }, null, 2)}</pre> */}
           </div>
         )}
 
