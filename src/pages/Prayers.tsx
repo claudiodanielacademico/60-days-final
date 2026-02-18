@@ -35,13 +35,15 @@ const Prayers = () => {
     try {
       const { data: prayerData, error } = await supabase
         .from("prayer_requests")
-        .select("*, profiles!prayer_requests_user_id_fkey(display_name, avatar_url, username)")
+        // SIMPLIFIED: Remove join to test RLS visibility
+        .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .limit(50) as any;
 
       if (error) {
         console.error("[Prayers] Fetch Error:", error);
+        toast({ title: "Erro de Busca", description: error.message, variant: "destructive" });
         return;
       }
 
