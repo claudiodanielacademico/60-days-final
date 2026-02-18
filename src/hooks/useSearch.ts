@@ -116,20 +116,7 @@ export const useSearch = (query: string, debounceMs: number = 300) => {
                     .order("created_at", { ascending: false })
                     .limit(15);
 
-                // Search prayers by content
-                const { data: prayersResults } = await supabase
-                    .from("prayer_requests")
-                    .select("id, user_id, content, created_at, profiles!prayer_requests_user_id_fkey(username, display_name)")
-                    .ilike("content", `%${trimmedQuery}%`)
-                    .order("created_at", { ascending: false })
-                    .limit(15);
-
                 postsData = (postsResults || []).map(p => ({
-                    ...p,
-                    profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
-                }));
-
-                prayersData = (prayersResults || []).map(p => ({
                     ...p,
                     profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
                 }));
@@ -138,7 +125,7 @@ export const useSearch = (query: string, debounceMs: number = 300) => {
             setResults({
                 users: usersData,
                 posts: postsData,
-                prayers: prayersData,
+                prayers: [],
             });
         } catch (error) {
             console.error("Search error:", error);
