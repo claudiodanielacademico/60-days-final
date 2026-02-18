@@ -26,24 +26,37 @@ const Prayers = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const fetchPrayers = async () => {
-    if (!user) return;
-
-    const { data: prayerData } = await supabase
+    const { data: prayerData, error } = await supabase
       .from("prayer_requests")
-      .select("*, profiles!prayer_requests_user_id_fkey(display_name, username)")
-      .eq("user_id", user.id)  // Filter to show only current user's prayers
+      .select("*, profiles!prayer_requests_user_id_fkey(display_name, avatar_url, username)")
       .order("created_at", { ascending: false })
       .limit(50);
 
+    if (error) {
+      console.error("Error fetching prayers:", error);
+      return;
+    }
+
     if (!prayerData) return;
     const ids = prayerData.map((p) => p.id);
+
+    // If no prayers yet, just clear and return
+    if (ids.length === 0) {
+      setRequests([]);
+      return;
+    }
+
     const [countsRes, userPrayedRes] = await Promise.all([
       supabase.from("prayer_counts").select("prayer_request_id").in("prayer_request_id", ids),
-      supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids),
+      user
+        ? supabase.from("prayer_counts").select("prayer_request_id").eq("user_id", user.id).in("prayer_request_id", ids)
+        : Promise.resolve({ data: [] }),
     ]);
+
     const counts: Record<string, number> = {};
     countsRes.data?.forEach((c) => { counts[c.prayer_request_id] = (counts[c.prayer_request_id] || 0) + 1; });
     const prayedSet = new Set(userPrayedRes.data?.map((c) => c.prayer_request_id));
+
     setRequests(prayerData.map((p) => ({
       ...p,
       profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
@@ -52,16 +65,31 @@ const Prayers = () => {
     })));
   };
 
-  useEffect(() => { fetchPrayers(); }, [user]);
+  useEffect(() => {
+    fetchPrayers();
 
-  const submitPrayer = async () => {
+    // Subscribe to new prayers and counts globally
+    const prayerChannel = supabase
+      .channel("global-prayers")
+      .on("postgres_changes", { event: "*", schema: "public", table: "prayer_requests" }, () => fetchPrayers())
+      .on("postgres_changes", { event: "*", schema: "public", table: "prayer_counts" }, () => fetchPrayers())
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(prayerChannel);
+    };
+  }, [user]);
+
+  const submitPost = async () => {
     if (!user || !newPrayer.trim()) return;
     setSubmitting(true);
     const { error } = await supabase.from("prayer_requests").insert({ user_id: user.id, content: newPrayer.trim() });
     if (error) {
       toast({ title: t("general.error"), description: error.message, variant: "destructive" });
     } else {
-      setNewPrayer(""); setShowForm(false); fetchPrayers();
+      setNewPrayer(""); setShowForm(false);
+      toast({ title: "Oração enviada", description: "Sua oração foi registrada no mural." });
+      // Real-time listener will trigger fetchPrayers
     }
     setSubmitting(false);
   };
@@ -96,7 +124,7 @@ const Prayers = () => {
               <CardContent className="p-4 space-y-3">
                 <Textarea placeholder={t("prayers.placeholder")} value={newPrayer} onChange={(e) => setNewPrayer(e.target.value)} rows={3} />
                 <div className="flex justify-end">
-                  <Button onClick={submitPrayer} disabled={submitting || !newPrayer.trim()} size="sm">
+                  <Button onClick={submitPost} disabled={submitting || !newPrayer.trim()} size="sm">
                     {submitting ? t("prayers.submitting") : t("prayers.submit")}
                   </Button>
                 </div>
@@ -107,21 +135,28 @@ const Prayers = () => {
         {requests.length === 0 && (
           <div className="py-20 text-center text-muted-foreground">
             <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p>{t("prayers.noPersonalPrayers") || "You haven't posted any prayer requests yet"}</p>
+            <p>{t("prayers.noPersonalPrayers") || "Ainda não há pedidos de oração"}</p>
             <p className="text-xs mt-1">{t("prayers.beFirst")}</p>
           </div>
         )}
         {requests.map((req, i) => (
           <motion.div key={req.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Card className="border-0 shadow-sm">
+            <Card className={cn("border-0 shadow-sm", req.user_id === user?.id && "ring-1 ring-accent/30 bg-accent/5")}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="h-7 w-7 rounded-full bg-accent/10 flex items-center justify-center text-xs font-bold text-accent">
-                    {req.profiles?.display_name?.[0]?.toUpperCase() || "?"}
+                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary overflow-hidden">
+                    {req.profiles?.avatar_url ? (
+                      <img src={req.profiles.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      req.profiles?.display_name?.[0]?.toUpperCase() || "?"
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{req.profiles?.display_name || "Anonymous"}</p>
-                    <p className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</p>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold leading-none">
+                      {req.profiles?.display_name || "Anonymous"}
+                      {req.user_id === user?.id && <span className="ml-2 text-[10px] text-accent uppercase font-bold tracking-wider">(Sua)</span>}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap mb-3">{req.content}</p>

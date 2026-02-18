@@ -245,11 +245,13 @@ const Journey = () => {
                   disabled={!isAllSubStepsDone}
                   onClick={() => markComplete(selectedDay.day_number)}
                   className={cn(
-                    "w-full h-14 text-lg font-bold gap-3 shadow-lg btn-rounded transition-all active:scale-95",
-                    isAllSubStepsDone ? "gradient-spiritual" : "bg-muted text-muted-foreground"
+                    "w-full h-16 text-lg font-bold gap-3 shadow-xl btn-rounded transition-all active:scale-95",
+                    isAllSubStepsDone
+                      ? "bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-[#1A2B3C] border-2 border-[#D4AF37]/20 btn-pulse scale-[1.02]"
+                      : "bg-muted text-muted-foreground"
                   )}
                 >
-                  <Check className="h-5 w-5" />
+                  <Check className={cn("h-6 w-6", isAllSubStepsDone && "animate-bounce")} />
                   {isAllSubStepsDone ? t("journey.markComplete") : "Realize todos os passos"}
                 </Button>
               ) : (
