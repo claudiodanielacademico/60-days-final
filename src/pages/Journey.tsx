@@ -239,30 +239,28 @@ const Journey = () => {
             })}
           </div>
 
-          <div className="mt-12 mb-8 px-2">
+          <div className="fixed bottom-24 right-4 z-[100] flex flex-col items-end gap-2">
             {!isDayAlreadyCompleted ? (
-              <Button
-                disabled={!isAllSubStepsDone}
-                onClick={() => markComplete(selectedDay.day_number)}
-                className={cn(
-                  "w-full h-20 text-xl font-bold gap-4 shadow-2xl btn-rounded transition-all active:scale-95 border-b-4",
-                  isAllSubStepsDone
-                    ? "bg-gradient-to-r from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-primary border-[#B8860B] btn-pulse scale-[1.05]"
-                    : "bg-muted text-muted-foreground border-muted-foreground/20"
-                )}
-              >
-                <Check className={cn("h-8 w-8", isAllSubStepsDone && "animate-bounce")} />
-                {isAllSubStepsDone ? t("journey.markComplete") : "Complete todos os passos acima"}
-              </Button>
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  disabled={!isAllSubStepsDone}
+                  onClick={() => markComplete(selectedDay.day_number)}
+                  className={cn(
+                    "h-20 w-20 rounded-full flex-col shadow-[0_10px_40px_rgba(212,175,55,0.4)] border-2 border-[#D4AF37]/50",
+                    isAllSubStepsDone
+                      ? "bg-gradient-to-br from-[#D4AF37] via-[#F5E6A3] to-[#D4AF37] text-primary btn-pulse animate-bounce"
+                      : "bg-muted text-muted-foreground opacity-90"
+                  )}
+                >
+                  <Check className={cn("h-8 w-8", isAllSubStepsDone && "animate-pulse")} />
+                  <span className="text-[8px] font-black uppercase leading-none mt-1">
+                    {isAllSubStepsDone ? "CONCLUIR" : "FAÇA OS PASSOS"}
+                  </span>
+                </Button>
+              </motion.div>
             ) : (
-              <div className="py-8 flex flex-col items-center justify-center gap-4 bg-sage/10 rounded-3xl border-2 border-dashed border-sage/50">
-                <div className="bg-sage text-white p-3 rounded-full shadow-lg">
-                  <Check className="h-10 w-10 text-white" />
-                </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-sage">{t("journey.completed")}</p>
-                  <p className="text-sm text-sage/70 font-medium">Você concluiu as tarefas de hoje!</p>
-                </div>
+              <div className="h-16 w-16 rounded-full bg-sage text-white flex items-center justify-center shadow-xl border-4 border-white/50 animate-in fade-in zoom-in">
+                <Check className="h-8 w-8" />
               </div>
             )}
           </div>
