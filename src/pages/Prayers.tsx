@@ -157,7 +157,7 @@ const Prayers = () => {
         {requests.length === 0 && !submitting && (
           <div className="py-20 text-center text-muted-foreground">
             <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
-            <p>{t("prayers.noPersonalPrayers") || "Seu diário de oração está vazio"}</p>
+            <p>{t("prayers.noPersonalPrayers") || "Você ainda não tem orações salvas"}</p>
             <p className="text-xs mt-1">Suas orações são privadas e aparecem apenas aqui.</p>
           </div>
         )}
