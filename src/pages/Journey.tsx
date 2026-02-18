@@ -238,8 +238,8 @@ const Journey = () => {
             })}
           </div>
 
-          <div className="fixed bottom-4 left-0 right-0 p-4 bg-background/80 backdrop-blur-md border-t border-border z-10">
-            <div className="mx-auto max-w-lg">
+          <div className="fixed bottom-28 left-0 right-0 p-4 z-20 pointer-events-none">
+            <div className="mx-auto max-w-lg bg-background/95 backdrop-blur-md border-2 border-accent/20 rounded-2xl p-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] pointer-events-auto">
               {!isDayAlreadyCompleted ? (
                 <Button
                   disabled={!isAllSubStepsDone}
