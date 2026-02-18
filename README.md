@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+<!-- Redeploy trigger: 2026-02-18 15:16 -->
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
