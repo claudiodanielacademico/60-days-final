@@ -29,6 +29,14 @@ const Prayers = () => {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle().then(({ data }) => setProfile(data));
+    }
+  }, [user]);
+
   const fetchPrayers = async () => {
     if (!user) return;
 
@@ -64,7 +72,7 @@ const Prayers = () => {
 
       setRequests(prayerData.map((p: any) => ({
         ...p,
-        profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
+        profiles: profile || { display_name: "Eu", avatar_url: null, username: "me" }, // Fallback to current user profile
         prayer_count: counts[p.id] || 0,
         user_prayed: prayedSet.has(p.id),
       })));
@@ -74,7 +82,9 @@ const Prayers = () => {
   };
 
   useEffect(() => {
-    fetchPrayers();
+    if (profile) {
+      fetchPrayers();
+    }
 
     if (user) {
       const prayerChannel = supabase
