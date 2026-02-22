@@ -56,14 +56,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-secondary to-warm-brown p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-secondary/50 to-warm-brown/30 p-4">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="w-full max-w-sm">
         <div className="mb-4 flex justify-center">
           <LanguageSwitcher />
         </div>
         <div className="mb-8 text-center">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-            <BookOpen className="h-8 w-8 text-primary-foreground" />
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-white shadow-lg overflow-hidden border border-secondary/20">
+            <img src="/logo.png" alt="60 Days Closer Logo" className="h-full w-full object-cover" />
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-foreground">{t("auth.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("auth.subtitle")}</p>

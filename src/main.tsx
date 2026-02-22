@@ -1,3 +1,4 @@
+// App initialized - Triggering redeploy for routing fixes
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
@@ -5,21 +6,21 @@ import "./index.css";
 const rootElement = document.getElementById("root");
 
 if (!rootElement) {
-    console.error("Failed to find the root element");
+  console.error("Failed to find the root element");
 } else {
-    try {
-        // Basic check for Supabase keys to prevent silent failures
-        const hasUrl = !!import.meta.env.VITE_SUPABASE_URL;
-        const hasKey = !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  try {
+    // Basic check for Supabase keys to prevent silent failures
+    const hasUrl = !!import.meta.env.VITE_SUPABASE_URL;
+    const hasKey = !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-        if (!hasUrl || !hasKey) {
-            console.warn("Supabase credentials missing in environment variables.");
-        }
+    if (!hasUrl || !hasKey) {
+      console.warn("Supabase credentials missing in environment variables.");
+    }
 
-        createRoot(rootElement).render(<App />);
-    } catch (error) {
-        console.error("Application crashed during mount:", error);
-        rootElement.innerHTML = `
+    createRoot(rootElement).render(<App />);
+  } catch (error) {
+    console.error("Application crashed during mount:", error);
+    rootElement.innerHTML = `
       <div style="padding: 20px; font-family: sans-serif; text-align: center; color: #333;">
         <h1 style="color: #e11d48;">Ops! Erro ao carregar o aplicativo.</h1>
         <p>Houve um erro técnico durante o carregamento.</p>
@@ -31,5 +32,5 @@ if (!rootElement) {
         </button>
       </div>
     `;
-    }
+  }
 }
