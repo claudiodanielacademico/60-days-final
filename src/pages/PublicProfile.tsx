@@ -117,8 +117,13 @@ const PublicProfile = () => {
         try {
             const convId = await startConversation(profile.user_id);
             navigate("/messages", { state: { selectedConversationId: convId } });
-        } catch (error) {
-            toast({ title: t("general.error"), variant: "destructive" });
+        } catch (error: any) {
+            console.error("Chat start error:", error);
+            toast({
+                title: t("general.error"),
+                description: error.message || "Erro ao iniciar conversa",
+                variant: "destructive"
+            });
         }
     };
 

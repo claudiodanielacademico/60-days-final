@@ -38,7 +38,8 @@ const BottomNav = () => {
         <motion.div
           drag="x"
           dragConstraints={constraints}
-          dragElastic={0.1}
+          dragElastic={0.2}
+          dragMomentum={true}
           className="flex items-center justify-start px-4 py-2 gap-2 cursor-grab active:cursor-grabbing"
         >
           {tabs.map(({ path, labelKey, icon: Icon }) => {
@@ -46,7 +47,6 @@ const BottomNav = () => {
             return (
               <button
                 key={path}
-                onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => navigate(path)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1.5 text-[10px] min-w-[72px] transition-all duration-200 shrink-0 select-none",

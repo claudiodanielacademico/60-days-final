@@ -19,12 +19,13 @@ const FollowList = () => {
         const fetchList = async () => {
             setLoading(true);
             // Get profile first
-            const { data: profileData } = await (supabase.from as any)("profiles")
+            const { data: profileData, error: profileErr } = await (supabase.from as any)("profiles")
                 .select("id, user_id, display_name")
                 .eq("username", username)
-                .single();
+                .maybeSingle();
 
-            if (!profileData) {
+            if (profileErr || !profileData) {
+                console.error("Profile not found or error:", profileErr);
                 setLoading(false);
                 return;
             }
