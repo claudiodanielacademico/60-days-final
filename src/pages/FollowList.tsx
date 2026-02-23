@@ -46,22 +46,26 @@ const FollowList = () => {
             console.log("Follow data retrieved:", followData);
 
             if (followData && followData.length > 0) {
-                const userIds = followData.map((f: any) => type === "followers" ? f.follower_id : f.following_id);
-                console.log("Mapping user IDs to profiles:", userIds);
+                const userIds = followData
+                    .map((f: any) => type === "followers" ? f.follower_id : f.following_id)
+                    .filter((id: string) => !!id);
+
+                console.log("FollowList: Mapping profiles for userIds:", userIds);
 
                 const { data: profileList, error: profileError } = await supabase
                     .from("profiles")
-                    .select("*")
+                    .select("id, user_id, username, display_name, avatar_url, bio, user_code")
                     .in("user_id", userIds);
 
                 if (profileError) {
-                    console.error("Error fetching profile list:", profileError);
-                } else if (profileList) {
-                    console.log("Profile list fetched:", profileList);
-                    setUsers(profileList);
+                    console.error("FollowList: Profile fetch error:", profileError);
+                } else {
+                    console.log("FollowList: Successfully fetched profiles:", profileList?.length);
+                    setUsers(profileList || []);
                 }
             } else {
-                console.log("No follow data found.");
+                console.log("FollowList: No followers/following found for this user.");
+                setUsers([]);
             }
             setLoading(false);
         };

@@ -38,10 +38,12 @@ const BottomNav = () => {
         <motion.div
           drag="x"
           dragConstraints={constraints}
-          dragElastic={0.2}
+          dragElastic={0.3}
           dragMomentum={true}
+          style={{ touchAction: "none" }}
           className="flex items-center justify-start px-4 py-2 gap-2 cursor-grab active:cursor-grabbing"
         >
+          {/* v2.1.0-drag-fix */}
           {tabs.map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
             return (
