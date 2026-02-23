@@ -62,8 +62,13 @@ const Auth = () => {
           <LanguageSwitcher />
         </div>
         <div className="mb-8 text-center">
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-white shadow-lg overflow-hidden border border-secondary/20">
-            <img src="/logo.png" alt="60 Days Closer Logo" className="h-full w-full object-cover" />
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10"
+          >
+            <BookOpen className="h-10 w-10 text-primary" />
           </motion.div>
           <h1 className="font-display text-3xl font-bold text-foreground">{t("auth.title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("auth.subtitle")}</p>
