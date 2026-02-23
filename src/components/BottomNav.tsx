@@ -33,7 +33,7 @@ const BottomNav = () => {
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom">
       <div
         ref={containerRef}
-        className="mx-auto max-w-lg overflow-hidden flex items-center"
+        className="mx-auto max-w-lg overflow-hidden flex items-center relative"
       >
         <motion.div
           drag="x"
@@ -43,7 +43,8 @@ const BottomNav = () => {
           style={{ touchAction: "none" }}
           className="flex items-center justify-start px-4 py-2 gap-2 cursor-grab active:cursor-grabbing"
         >
-          {/* v2.1.0-drag-fix */}
+          {/* v2.3.0-drag-fix */}
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[8px] text-primary/30 font-mono pointer-events-none">v2.3.0</div>
           {tabs.map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
             return (
