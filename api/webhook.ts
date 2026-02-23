@@ -75,7 +75,7 @@ export default async function handler(req: any, res: any) {
                     .update({
                         subscription_tier: tier,
                         subscription_status: 'active',
-                        subscription_end_date: expiryDate.toISOString()
+                        subscription_end_date: expiryDate ? expiryDate.toISOString() : null
                     })
                     .eq('user_id', targetUser.id)
             }
