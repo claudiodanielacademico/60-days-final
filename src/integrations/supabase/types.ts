@@ -250,6 +250,9 @@ export type Database = {
           user_id: string
           username: string | null
           user_code: string | null
+          subscription_tier: string | null
+          subscription_status: string | null
+          subscription_end_date: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -261,6 +264,9 @@ export type Database = {
           user_id: string
           username?: string | null
           user_code?: string | null
+          subscription_tier?: string | null
+          subscription_status?: string | null
+          subscription_end_date?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -272,6 +278,9 @@ export type Database = {
           user_id?: string
           username?: string | null
           user_code?: string | null
+          subscription_tier?: string | null
+          subscription_status?: string | null
+          subscription_end_date?: string | null
         }
         Relationships: []
       }
