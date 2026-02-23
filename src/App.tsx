@@ -17,8 +17,6 @@ import Messages from "@/pages/Messages";
 import PublicProfile from "@/pages/PublicProfile";
 import FollowList from "@/pages/FollowList";
 import NotFound from "@/pages/NotFound";
-import Pricing from "@/pages/Pricing";
-import SubscriptionGate from "@/components/SubscriptionGate";
 
 const queryClient = new QueryClient();
 
@@ -46,10 +44,9 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<AuthRoute />} />
-              <Route path="/pricing" element={<ProtectedRoute><AppShell><Pricing /></AppShell></ProtectedRoute>} />
               <Route element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
                 <Route index element={<Index />} />
-                <Route path="journey" element={<SubscriptionGate><Journey /></SubscriptionGate>} />
+                <Route path="journey" element={<Journey />} />
                 <Route path="community" element={<Community />} />
                 <Route path="prayers" element={<Prayers />} />
                 <Route path="search" element={<Search />} />
