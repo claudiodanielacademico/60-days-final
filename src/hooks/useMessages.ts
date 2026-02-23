@@ -76,44 +76,58 @@ export const useMessages = () => {
 
     const sendMessage = async (conversationId: string, content: string) => {
         if (!user) return;
-        const { error } = await (supabase.from as any)("messages").insert({
-            conversation_id: conversationId,
-            sender_id: user.id,
-            content,
-        });
-        if (error) throw error;
+        try {
+            const { error } = await (supabase.from as any)("messages").insert({
+                conversation_id: conversationId,
+                sender_id: user.id,
+                content,
+            });
+            if (error) throw error;
+        } catch (error) {
+            console.error("Error in sendMessage:", error);
+            throw error;
+        }
     };
 
     const startConversation = async (otherUserId: string) => {
         if (!user) return;
 
-        // Check if conversation already exists
-        const { data: existing } = await (supabase.from as any)("conversation_members")
-            .select("conversation_id")
-            .eq("user_id", user.id);
-
-        const convIds = existing?.map((e: any) => e.conversation_id) || [];
-
-        if (convIds.length > 0) {
-            const { data: otherMember } = await (supabase.from as any)("conversation_members")
+        try {
+            // Check if conversation already exists
+            const { data: existing, error: checkError } = await (supabase.from as any)("conversation_members")
                 .select("conversation_id")
-                .in("conversation_id", convIds)
-                .eq("user_id", otherUserId)
-                .maybeSingle();
+                .eq("user_id", user.id);
 
-            if (otherMember) return otherMember.conversation_id;
+            if (checkError) throw checkError;
+
+            const convIds = existing?.map((e: any) => e.conversation_id) || [];
+
+            if (convIds.length > 0) {
+                const { data: otherMember, error: memberError } = await (supabase.from as any)("conversation_members")
+                    .select("conversation_id")
+                    .in("conversation_id", convIds)
+                    .eq("user_id", otherUserId)
+                    .maybeSingle();
+
+                if (memberError) console.warn("Issue checking other member:", memberError);
+                if (otherMember) return otherMember.conversation_id;
+            }
+
+            // Create new conversation
+            const { data: newConv, error: convError } = await (supabase.from as any)("conversations").insert({}).select().single();
+            if (convError) throw convError;
+
+            const { error: memberInsertError } = await (supabase.from as any)("conversation_members").insert([
+                { conversation_id: newConv.id, user_id: user.id },
+                { conversation_id: newConv.id, user_id: otherUserId },
+            ]);
+            if (memberInsertError) throw memberInsertError;
+
+            return newConv.id;
+        } catch (error) {
+            console.error("Error in startConversation:", error);
+            throw error;
         }
-
-        // Create new conversation
-        const { data: newConv, error: convError } = await (supabase.from as any)("conversations").insert({}).select().single();
-        if (convError) throw convError;
-
-        await (supabase.from as any)("conversation_members").insert([
-            { conversation_id: newConv.id, user_id: user.id },
-            { conversation_id: newConv.id, user_id: otherUserId },
-        ]);
-
-        return newConv.id;
     };
 
     return { conversations, loading, sendMessage, startConversation, refresh: fetchConversations };

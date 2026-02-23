@@ -1,7 +1,9 @@
+import { useRef, useEffect, useState } from "react";
 import { BookOpen, Users, Heart, User, Search, MessageSquare } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { motion } from "framer-motion";
 
 const tabs = [
   { path: "/journey", labelKey: "nav.journey" as const, icon: BookOpen },
@@ -16,19 +18,38 @@ const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const width = containerRef.current.scrollWidth;
+      const viewWidth = containerRef.current.offsetWidth;
+      setConstraints({ left: -(width - viewWidth), right: 0 });
+    }
+  }, [tabs]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-md safe-area-bottom">
-      <div className="mx-auto max-w-lg overflow-x-auto no-scrollbar scroll-smooth">
-        <div className="flex items-center justify-start px-4 py-2 gap-2 min-w-max">
+      <div
+        ref={containerRef}
+        className="mx-auto max-w-lg overflow-hidden flex items-center"
+      >
+        <motion.div
+          drag="x"
+          dragConstraints={constraints}
+          dragElastic={0.1}
+          className="flex items-center justify-start px-4 py-2 gap-2 cursor-grab active:cursor-grabbing"
+        >
           {tabs.map(({ path, labelKey, icon: Icon }) => {
             const active = location.pathname.startsWith(path);
             return (
               <button
                 key={path}
+                onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => navigate(path)}
                 className={cn(
-                  "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1.5 text-[10px] min-w-[72px] transition-all duration-200 shrink-0",
+                  "flex flex-col items-center gap-0.5 rounded-xl px-4 py-1.5 text-[10px] min-w-[72px] transition-all duration-200 shrink-0 select-none",
                   active ? "text-primary font-semibold translate-y-[-2px]" : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -37,7 +58,7 @@ const BottomNav = () => {
               </button>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </nav>
   );
