@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useMessages } from "@/hooks/useMessages";
 import { useToast } from "@/hooks/use-toast";
 import { formatUserCode } from "@/lib/userUtils";
+import { cn } from "@/lib/utils";
 
 const PublicProfile = () => {
     const { username } = useParams();
@@ -21,35 +22,76 @@ const PublicProfile = () => {
 
     const [profile, setProfile] = useState<any>(null);
     const [stats, setStats] = useState({ daysCompleted: 0, prayersOffered: 0, postsMade: 0 });
+    const [followStats, setFollowStats] = useState({ followers: 0, following: 0 });
+    const [isFollowing, setIsFollowing] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [followLoading, setFollowLoading] = useState(false);
+
+    const fetchPublicData = async () => {
+        setLoading(true);
+        const { data: profileData } = await (supabase.from as any)("profiles")
+            .select("*")
+            .eq("username", username)
+            .maybeSingle();
+
+        if (profileData) {
+            setProfile(profileData);
+
+            const [progressRes, prayersRes, postsRes, followersRes, followingRes, checkFollowRes] = await Promise.all([
+                supabase.from("journey_progress").select("id").eq("user_id", profileData.user_id).eq("completed", true),
+                supabase.from("prayer_counts").select("id").eq("user_id", profileData.user_id),
+                supabase.from("community_posts").select("id").eq("user_id", profileData.user_id),
+                supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", profileData.user_id),
+                supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profileData.user_id),
+                user ? supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", profileData.user_id).maybeSingle() : Promise.resolve({ data: null })
+            ]);
+
+            setStats({
+                daysCompleted: progressRes.data?.length || 0,
+                prayersOffered: prayersRes.data?.length || 0,
+                postsMade: postsRes.data?.length || 0,
+            });
+
+            setFollowStats({
+                followers: followersRes.count || 0,
+                following: followingRes.count || 0
+            });
+
+            setIsFollowing(!!checkFollowRes.data);
+        }
+        setLoading(false);
+    };
 
     useEffect(() => {
-        const fetchPublicData = async () => {
-            setLoading(true);
-            const { data: profileData } = await (supabase.from as any)("profiles")
-                .select("*")
-                .eq("username", username)
-                .maybeSingle();
-
-            if (profileData) {
-                setProfile(profileData);
-
-                const [progressRes, prayersRes, postsRes] = await Promise.all([
-                    supabase.from("journey_progress").select("id").eq("user_id", profileData.user_id).eq("completed", true),
-                    supabase.from("prayer_counts").select("id").eq("user_id", profileData.user_id),
-                    supabase.from("community_posts").select("id").eq("user_id", profileData.user_id),
-                ]);
-
-                setStats({
-                    daysCompleted: progressRes.data?.length || 0,
-                    prayersOffered: prayersRes.data?.length || 0,
-                    postsMade: postsRes.data?.length || 0,
-                });
-            }
-            setLoading(false);
-        };
         fetchPublicData();
-    }, [username]);
+    }, [username, user?.id]);
+
+    const handleFollowAction = async () => {
+        if (!user) {
+            navigate("/auth");
+            return;
+        }
+        if (!profile) return;
+
+        setFollowLoading(true);
+        try {
+            if (isFollowing) {
+                await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.user_id);
+                setIsFollowing(false);
+                setFollowStats(prev => ({ ...prev, followers: prev.followers - 1 }));
+                toast({ title: t("profile.updated") || "Unfollowed" });
+            } else {
+                await supabase.from("follows").insert({ follower_id: user.id, following_id: profile.user_id });
+                setIsFollowing(true);
+                setFollowStats(prev => ({ ...prev, followers: prev.followers + 1 }));
+                toast({ title: t("profile.updated") || "Following" });
+            }
+        } catch (error) {
+            toast({ title: t("general.error"), variant: "destructive" });
+        } finally {
+            setFollowLoading(false);
+        }
+    };
 
     const handleStartChat = async () => {
         if (!user) {
@@ -60,7 +102,7 @@ const PublicProfile = () => {
 
         try {
             const convId = await startConversation(profile.user_id);
-            navigate("/messages");
+            navigate("/messages", { state: { selectedConversationId: convId } });
         } catch (error) {
             toast({ title: t("general.error"), variant: "destructive" });
         }
@@ -102,10 +144,46 @@ const PublicProfile = () => {
                                     <p className="text-sm text-muted-foreground">@{profile.username}</p>
                                 </div>
 
+                                {/* Follow Stats */}
+                                <div className="flex justify-center gap-6 mt-2">
+                                    <button
+                                        onClick={() => navigate(`/user/${profile.username}/followers`)}
+                                        className="text-center group"
+                                    >
+                                        <p className="text-base font-bold group-hover:text-primary transition-colors">{followStats.followers}</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("profile.followers") || "Followers"}</p>
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/user/${profile.username}/following`)}
+                                        className="text-center group"
+                                    >
+                                        <p className="text-base font-bold group-hover:text-primary transition-colors">{followStats.following}</p>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("profile.following") || "Following"}</p>
+                                    </button>
+                                </div>
+
                                 {profile.user_id !== user?.id && (
-                                    <Button className="mt-4 w-full gap-2 rounded-xl" onClick={handleStartChat}>
-                                        <MessageSquare className="h-4 w-4" /> {t("profile.message")}
-                                    </Button>
+                                    <div className="flex gap-2 w-full mt-4">
+                                        <Button
+                                            className={cn(
+                                                "flex-1 gap-2 rounded-xl transition-all",
+                                                isFollowing ? "bg-secondary/20 text-primary hover:bg-secondary/30 border border-primary/20" : ""
+                                            )}
+                                            variant={isFollowing ? "outline" : "default"}
+                                            onClick={handleFollowAction}
+                                            disabled={followLoading}
+                                        >
+                                            <Users className="h-4 w-4" />
+                                            {isFollowing ? t("profile.unfollow") : t("profile.follow")}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="gap-2 rounded-xl px-4"
+                                            onClick={handleStartChat}
+                                        >
+                                            <MessageSquare className="h-4 w-4" />
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
 

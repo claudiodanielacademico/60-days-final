@@ -30,20 +30,25 @@ const FollowList = () => {
             }
             setProfile(profileData);
 
-            let query;
+            let followData;
             if (type === "followers") {
-                query = (supabase.from as any)("follows")
-                    .select("follower_id, profiles:profiles!follows_follower_id_fkey(*)")
-                    .eq("following_id", profileData.user_id);
+                const { data } = await supabase.from("follows").select("follower_id").eq("following_id", profileData.user_id);
+                followData = data;
             } else {
-                query = (supabase.from as any)("follows")
-                    .select("following_id, profiles:profiles!follows_following_id_fkey(*)")
-                    .eq("follower_id", profileData.user_id);
+                const { data } = await supabase.from("follows").select("following_id").eq("follower_id", profileData.user_id);
+                followData = data;
             }
 
-            const { data, error } = await query;
-            if (!error && data) {
-                setUsers(data.map((item: any) => type === "followers" ? item.profiles : item.profiles));
+            if (followData && followData.length > 0) {
+                const userIds = followData.map((f: any) => type === "followers" ? f.follower_id : f.following_id);
+                const { data: profileList, error: profileError } = await supabase
+                    .from("profiles")
+                    .select("*")
+                    .in("user_id", userIds);
+
+                if (!profileError && profileList) {
+                    setUsers(profileList);
+                }
             }
             setLoading(false);
         };

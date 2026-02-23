@@ -95,6 +95,8 @@ const translations = {
   "profile.updated": { pt: "Perfil atualizado!", en: "Profile updated!", es: "¡Perfil actualizado!" },
   "profile.message": { pt: "Enviar Mensagem", en: "Send Message", es: "Enviar Mensaje" },
   "profile.stats": { pt: "Estatísticas", en: "Stats", es: "Estadísticas" },
+  "profile.follow": { pt: "Seguir", en: "Follow", es: "Seguir" },
+  "profile.unfollow": { pt: "Remover Seguindo", en: "Unfollow", es: "Deixar de Seguir" },
 
   // Search
   "search.title": { pt: "Buscar", en: "Search", es: "Buscar" },

@@ -6,14 +6,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocation } from "react-router-dom";
 import ChatWindow from "@/components/ChatWindow";
 import { motion, AnimatePresence } from "framer-motion";
 
 const Messages = () => {
     const { t } = useLanguage();
     const { user } = useAuth();
+    const { state } = useLocation();
     const { conversations, loading } = useMessages();
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+
+    // Auto-select conversation from navigation state
+    useEffect(() => {
+        if (state?.selectedConversationId && conversations.length > 0) {
+            const found = conversations.find(c => c.id === state.selectedConversationId);
+            if (found) setSelectedConversation(found);
+        }
+    }, [state, conversations]);
 
     if (selectedConversation) {
         const otherMember = selectedConversation.members.find(m => m.user_id !== user?.id);
