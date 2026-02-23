@@ -90,17 +90,17 @@ const PublicProfile = () => {
         setFollowLoading(true);
         try {
             if (isFollowing) {
-                await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.user_id);
-                setIsFollowing(false);
-                setFollowStats(prev => ({ ...prev, followers: prev.followers - 1 }));
-                toast({ title: t("profile.updated") || "Unfollowed" });
+                const { error } = await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.user_id);
+                if (error) throw error;
             } else {
-                await supabase.from("follows").insert({ follower_id: user.id, following_id: profile.user_id });
-                setIsFollowing(true);
-                setFollowStats(prev => ({ ...prev, followers: prev.followers + 1 }));
-                toast({ title: t("profile.updated") || "Following" });
+                const { error } = await supabase.from("follows").insert({ follower_id: user.id, following_id: profile.user_id });
+                if (error) throw error;
             }
-        } catch (error) {
+            // Re-fetch all data to ensure counts are accurate from DB
+            await fetchPublicData();
+            toast({ title: isFollowing ? t("profile.updated") : t("profile.updated") });
+        } catch (error: any) {
+            console.error("Follow action error:", error);
             toast({ title: t("general.error"), variant: "destructive" });
         } finally {
             setFollowLoading(false);

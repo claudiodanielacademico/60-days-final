@@ -89,8 +89,9 @@ const FollowList = () => {
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
                 ) : users.length === 0 ? (
-                    <div className="py-20 text-center text-muted-foreground">
-                        <p>{t("search.noResults")}</p>
+                    <div className="py-20 text-center">
+                        <Users className="mx-auto h-12 w-12 text-muted-foreground/30 mb-4" />
+                        <p className="text-muted-foreground">{t("search.noResults")}</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
