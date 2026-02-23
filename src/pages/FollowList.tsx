@@ -30,25 +30,37 @@ const FollowList = () => {
             }
             setProfile(profileData);
 
+            console.log(`Fetching followers for ${profileData.user_id}, type: ${type}`);
             let followData;
             if (type === "followers") {
-                const { data } = await supabase.from("follows").select("follower_id").eq("following_id", profileData.user_id);
+                const { data, error } = await supabase.from("follows").select("follower_id").eq("following_id", profileData.user_id);
+                if (error) console.error("Error fetching followers IDs:", error);
                 followData = data;
             } else {
-                const { data } = await supabase.from("follows").select("following_id").eq("follower_id", profileData.user_id);
+                const { data, error } = await supabase.from("follows").select("following_id").eq("follower_id", profileData.user_id);
+                if (error) console.error("Error fetching following IDs:", error);
                 followData = data;
             }
 
+            console.log("Follow data retrieved:", followData);
+
             if (followData && followData.length > 0) {
                 const userIds = followData.map((f: any) => type === "followers" ? f.follower_id : f.following_id);
+                console.log("Mapping user IDs to profiles:", userIds);
+
                 const { data: profileList, error: profileError } = await supabase
                     .from("profiles")
                     .select("*")
                     .in("user_id", userIds);
 
-                if (!profileError && profileList) {
+                if (profileError) {
+                    console.error("Error fetching profile list:", profileError);
+                } else if (profileList) {
+                    console.log("Profile list fetched:", profileList);
                     setUsers(profileList);
                 }
+            } else {
+                console.log("No follow data found.");
             }
             setLoading(false);
         };
