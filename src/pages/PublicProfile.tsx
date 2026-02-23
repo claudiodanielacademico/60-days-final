@@ -29,36 +29,50 @@ const PublicProfile = () => {
 
     const fetchPublicData = async () => {
         setLoading(true);
-        const { data: profileData } = await (supabase.from as any)("profiles")
+        const { data: profileData, error: profileError } = await (supabase.from as any)("profiles")
             .select("*")
             .eq("username", username)
             .maybeSingle();
 
-        if (profileData) {
-            setProfile(profileData);
-
-            const [progressRes, prayersRes, postsRes, followersRes, followingRes, checkFollowRes] = await Promise.all([
-                supabase.from("journey_progress").select("id").eq("user_id", profileData.user_id).eq("completed", true),
-                supabase.from("prayer_counts").select("id").eq("user_id", profileData.user_id),
-                supabase.from("community_posts").select("id").eq("user_id", profileData.user_id),
-                supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", profileData.user_id),
-                supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profileData.user_id),
-                user ? supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", profileData.user_id).maybeSingle() : Promise.resolve({ data: null })
-            ]);
-
-            setStats({
-                daysCompleted: progressRes.data?.length || 0,
-                prayersOffered: prayersRes.data?.length || 0,
-                postsMade: postsRes.data?.length || 0,
-            });
-
-            setFollowStats({
-                followers: followersRes.count || 0,
-                following: followingRes.count || 0
-            });
-
-            setIsFollowing(!!checkFollowRes.data);
+        if (profileError) {
+            console.error("Error fetching profile base data:", profileError);
+            setLoading(false); // Ensure loading is set to false even on error
+            return;
         }
+
+        if (!profileData) {
+            console.log("No profile found for username:", username);
+            setProfile(null); // Explicitly set profile to null if not found
+            setLoading(false); // Ensure loading is set to false
+            return;
+        }
+
+        setProfile(profileData);
+
+        const [progressRes, prayersRes, postsRes, followersRes, followingRes, checkFollowRes] = await Promise.all([
+            supabase.from("journey_progress").select("id").eq("user_id", profileData.user_id).eq("completed", true),
+            supabase.from("prayer_counts").select("id").eq("user_id", profileData.user_id),
+            supabase.from("community_posts").select("id").eq("user_id", profileData.user_id),
+            supabase.from("follows").select("id", { count: "exact", head: true }).eq("following_id", profileData.user_id),
+            supabase.from("follows").select("id", { count: "exact", head: true }).eq("follower_id", profileData.user_id),
+            user ? supabase.from("follows").select("id").eq("follower_id", user.id).eq("following_id", profileData.user_id).maybeSingle() : Promise.resolve({ data: null, error: null })
+        ]);
+
+        if (followersRes.error) console.error("Error fetching followers count:", followersRes.error);
+        if (followingRes.error) console.error("Error fetching following count:", followingRes.error);
+
+        setStats({
+            daysCompleted: progressRes.data?.length || 0,
+            prayersOffered: prayersRes.data?.length || 0,
+            postsMade: postsRes.data?.length || 0
+        });
+
+        setFollowStats({
+            followers: followersRes.count || 0,
+            following: followingRes.count || 0
+        });
+
+        setIsFollowing(!!checkFollowRes.data);
         setLoading(false);
     };
 
