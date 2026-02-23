@@ -10,7 +10,7 @@ const Pricing = () => {
     const navigate = useNavigate();
 
     // Link único da oferta Kirvano (onde o cliente escolhe o plano)
-    const KIRVANO_OFFER_LINK = "https://pay.kirvano.com/SEU-LINK-UNICO";
+    const KIRVANO_OFFER_LINK = "https://pay.kirvano.com/eb3e0043-9949-47ff-a6a5-91d5459fd7d9";
 
     const plans = [
         {
