@@ -1,11 +1,15 @@
 import { Outlet } from "react-router-dom";
 import BottomNav from "./BottomNav";
 
-const AppShell = () => {
+interface AppShellProps {
+  children?: React.ReactNode;
+}
+
+const AppShell = ({ children }: AppShellProps) => {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <main className="flex-1 pb-20">
-        <Outlet />
+        {children || <Outlet />}
       </main>
       <BottomNav />
     </div>
