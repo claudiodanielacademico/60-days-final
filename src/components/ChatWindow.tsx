@@ -7,18 +7,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, ChevronLeft } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { motion, AnimatePresence } from "framer-motion";
-
-interface Message {
-    id: string;
-    sender_id: string;
-    content: string;
-    created_at: string;
-}
+import { useMessages, Message } from "@/hooks/useMessages";
+import { useToast } from "@/hooks/use-toast";
 
 const ChatWindow = ({ conversationId, onBack, otherUser }: { conversationId: string; onBack: () => void; otherUser: any }) => {
     const { user } = useAuth();
     const { t } = useLanguage();
+    const { toast } = useToast();
+    const { sendMessage } = useMessages();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -49,12 +45,19 @@ const ChatWindow = ({ conversationId, onBack, otherUser }: { conversationId: str
 
     const handleSend = async () => {
         if (!newMessage.trim() || !user) return;
-        const { error } = await (supabase.from as any)("messages").insert({
-            conversation_id: conversationId,
-            sender_id: user.id,
-            content: newMessage.trim(),
-        });
-        if (!error) setNewMessage("");
+        const msgText = newMessage.trim();
+        setNewMessage(""); // Clear early for better UX
+        try {
+            await sendMessage(conversationId, msgText);
+        } catch (error: any) {
+            console.error("Failed to send message:", error);
+            toast({
+                title: t("general.error"),
+                description: error.message || "Erro ao enviar mensagem",
+                variant: "destructive"
+            });
+            setNewMessage(msgText); // Restore if failed
+        }
     };
 
     return (
